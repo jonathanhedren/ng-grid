@@ -1,3 +1,90 @@
+<a name="v3.0.0-RC.18"></a>
+### v3.0.0-RC.18 (2014-12-09)
+
+#### Bug Fixes
+
+* **Builds:** Switch to websockets to get SauceLabs tests running again
+
+<a name="v3.0.0-RC.17"></a>
+### v3.0.0-RC.17 (2014-12-08)
+
+
+#### Bug Fixes
+
+* **Aggregation:** Refactor introduced bug ([a54c6639](http://github.com/angular-ui/ng-grid/commit/a54c6639fb9db0dbb1e85346cd445f316f59c1f4))
+* **Builds:** Turn off Safari 5 for SL ([3cf645ea](http://github.com/angular-ui/ng-grid/commit/3cf645eaaf3c119ee41822a2d1bee4a3c31b9c05))
+* **Edit:** Remove leftover console.log() ([3b707584](http://github.com/angular-ui/ng-grid/commit/3b7075840bf6d4788f6c1786654372e90e7a4df3))
+* **Header:** Hidden header height misplacement ([783fefbd](http://github.com/angular-ui/ng-grid/commit/783fefbd89ab51c7257c57c7e592c5aa086d664f), closes [#1995](http://github.com/angular-ui/ng-grid/issues/1995))
+* **Pinning:** Add left border for right container ([e409c54b](http://github.com/angular-ui/ng-grid/commit/e409c54bef5cddc5dfeb4bd4e84d171114960d5a))
+* **RTL:** Put filter cancel on left for RTL ([0885e509](http://github.com/angular-ui/ng-grid/commit/0885e509e9fe46e58f3b016e342088f138cb072c), closes [#2058](http://github.com/angular-ui/ng-grid/issues/2058))
+* **Tests:** Accidentally left in a ddescribe ([e6cf438a](http://github.com/angular-ui/ng-grid/commit/e6cf438a6fda31338427c7bb51f0b998d9b351bb))
+* **cellNav:** Don't setup when directive not there ([9bfa6e3f](http://github.com/angular-ui/ng-grid/commit/9bfa6e3f638548f3f78c565f142771ca65e580bd), closes [#2128](http://github.com/angular-ui/ng-grid/issues/2128))
+
+
+#### Breaking Changes
+
+* The `hideHeader` option has been changed to `showHeader`
+
+To migrate, change your code from the following:
+
+`hideHeader: true`
+
+To:
+
+`showHeader: false`
+ ([783fefbd](http://github.com/angular-ui/ng-grid/commit/783fefbd89ab51c7257c57c7e592c5aa086d664f))
+
+<a name="v3.0.0-rc.16"></a>
+### v3.0.0-rc.16 (2014-11-13)
+
+
+#### Bug Fixes
+
+* **Edit:** Retain "focus" in endEdit() ([f3a45ef5](http://github.com/angular-ui/ng-grid/commit/f3a45ef51e5f49c11490654cb757b579163e45ba))
+* **Filter:** Watch running w/o change check ([79f6c21a](http://github.com/angular-ui/ng-grid/commit/79f6c21a45fe11e4ae87f3dd6eda8326bcfbb265))
+* **Grid:** Avoid too-early header height calc ([a335b922](http://github.com/angular-ui/ng-grid/commit/a335b9223c397dca31d5db82f48d62e9b7b43187))
+* **GridRenderContainer:** Correct prevScroll* ([1182b059](http://github.com/angular-ui/ng-grid/commit/1182b059ce64b3b5b4e49054b4737684393e5a19))
+* **Selection:** Change api for getSelectAllState() ([5ffefafc](http://github.com/angular-ui/ng-grid/commit/5ffefafc000351a71b269ce2265f2faddb35b6e7), closes [#2086](http://github.com/angular-ui/ng-grid/issues/2086))
+* **cellNav:**
+  * Don't lose focus with wrapping nav ([0e27c181](http://github.com/angular-ui/ng-grid/commit/0e27c1815d9fe1aabce2a9ba981bb75655f08979))
+  * Minor fixes and speed improvement ([94a31149](http://github.com/angular-ui/ng-grid/commit/94a31149ca0282612d7dc85d87d2a68f2c12367c))
+* **gridUtil:** Allow multiple logDebug params ([c903ecc8](http://github.com/angular-ui/ng-grid/commit/c903ecc89fabebceed576f4ca637bb3c5277a32c))
+* **uiGrid:**
+  * syntax error, change variable name ([63fedb6c](http://github.com/angular-ui/ng-grid/commit/63fedb6c87ac7b60d3362ce3f9359fdf070848ed))
+  * syntax error, change variable name ([181dec76](http://github.com/angular-ui/ng-grid/commit/181dec76aed49ff03a7f2c329ae8b6d65bdd594e))
+  * Fix race condition in data watcher ([2b25f249](http://github.com/angular-ui/ng-grid/commit/2b25f249cd133a02f44eec34ccee7f4e77adab16), closes [#2053](http://github.com/angular-ui/ng-grid/issues/2053))
+* **uiGridMenu:** Only run applyHide when not shown ([91bf06f2](http://github.com/angular-ui/ng-grid/commit/91bf06f289632f331fd125851282cb9f5b499bd4))
+
+<a name="v3.0.0-rc.15"></a>
+### v3.0.0-rc.15 (2014-11-11)
+
+
+#### Bug Fixes
+
+* **uiGridRenderContainer:** Inherit position ([fd353287](http://github.com/angular-ui/ng-grid/commit/fd353287639276083340ef96aa82749367f1deef), closes [#2030](http://github.com/angular-ui/ng-grid/issues/2030))
+
+
+#### Features
+
+* **Interpolation:** Handle custom symbols ([555ddecd](http://github.com/angular-ui/ng-grid/commit/555ddecddeb967f338f8bdf4da814d74f8b44495), closes [#1576](http://github.com/angular-ui/ng-grid/issues/1576))
+
+<a name="v3.0.0-rc.14"></a>
+### v3.0.0-rc.14 (2014-11-05)
+
+
+#### Bug Fixes
+
+* **bower:** Use right angular version spec ([6bd917a0](http://github.com/angular-ui/ng-grid/commit/6bd917a05527afe7f75db51bdaff24b44f554fd9))
+
+<a name="v3.0.0-rc.13"></a>
+### v3.0.0-rc.13 (2014-11-05)
+
+
+#### Bug Fixes
+
+* **AutoResize:** Redraw all of grid on resize. ([1bb5367c](http://github.com/angular-ui/ng-grid/commit/1bb5367cb304baeee6ca4ecc084cbc02601fb6f6), closes [#1770](http://github.com/angular-ui/ng-grid/issues/1770))
+* **Importer:** Account for older browsers properly ([52823249](http://github.com/angular-ui/ng-grid/commit/528232492ea9860390dd8da1a604103b25f33719))
+
 <a name="v3.0.0-rc.12"></a>
 ### v3.0.0-rc.12 (2014-10-08)
 

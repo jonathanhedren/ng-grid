@@ -86,17 +86,26 @@
               $scope.sortable = false;
             }
     
+            // Figure out whether this column is filterable or not
             if (uiGridCtrl.grid.options.enableFiltering && $scope.col.enableFiltering) {
               $scope.filterable = true;
             }
             else {
               $scope.filterable = false;
             }
+            
+            // figure out whether we support column menus
+            if ($scope.col.grid.options && $scope.col.grid.options.enableColumnMenus !== false && 
+                    $scope.col.colDef && $scope.col.colDef.enableColumnMenu !== false){
+              $scope.colMenu = true;
+            } else {
+              $scope.colMenu = false;
+            }
     
-            function handleClick(evt) {
+            function handleClick(event) {
               // If the shift key is being held down, add this column to the sort
               var add = false;
-              if (evt.shiftKey) {
+              if (event.shiftKey) {
                 add = true;
               }
     
@@ -127,42 +136,50 @@
             *
             */
 
-            // Long-click (for mobile)
-            var cancelMousedownTimeout;
-            var mousedownStartTime = 0;
-            $contentsElm.on('mousedown touchstart', function(event) {
-              if (typeof(event.originalEvent) !== 'undefined' && event.originalEvent !== undefined) {
-                event = event.originalEvent;
-              }
-    
-              // Don't show the menu if it's not the left button
-              if (event.button && event.button !== 0) {
-                return;
-              }
-    
-              mousedownStartTime = (new Date()).getTime();
-    
-              cancelMousedownTimeout = $timeout(function() { }, mousedownTimeout);
-    
-              cancelMousedownTimeout.then(function () {
-                if ($scope.col.grid.options && $scope.col.grid.options.enableColumnMenus !== false && 
-                    $scope.col.colDef && $scope.col.colDef.enableColumnMenu !== false) {
-                  uiGridCtrl.columnMenuScope.showMenu($scope.col, $elm, event);
+            if ($scope.sortable || $scope.colMenu) {
+              // Long-click (for mobile)
+              var cancelMousedownTimeout;
+              var mousedownStartTime = 0;
+
+              var downEvent = gridUtil.isTouchEnabled() ? 'touchstart' : 'mousedown';
+              $contentsElm.on(downEvent, function(event) {
+                gridUtil.logDebug('mouse event', event.type);
+
+                event.stopPropagation();
+
+                if (typeof(event.originalEvent) !== 'undefined' && event.originalEvent !== undefined) {
+                  event = event.originalEvent;
                 }
+      
+                // Don't show the menu if it's not the left button
+                if (event.button && event.button !== 0) {
+                  return;
+                }
+      
+                mousedownStartTime = (new Date()).getTime();
+      
+                cancelMousedownTimeout = $timeout(function() { }, mousedownTimeout);
+      
+                cancelMousedownTimeout.then(function () {
+                  if ( $scope.colMenu ) {
+                    uiGridCtrl.columnMenuScope.showMenu($scope.col, $elm, event);
+                  }
+                });
               });
-            });
-    
-            $contentsElm.on('mouseup touchend', function () {
-              $timeout.cancel(cancelMousedownTimeout);
-            });
+        
+              var upEvent = gridUtil.isTouchEnabled() ? 'touchend' : 'mouseup';
+              $contentsElm.on(upEvent, function () {
+                $timeout.cancel(cancelMousedownTimeout);
+              });
+  
+              $scope.$on('$destroy', function () {
+                $contentsElm.off('mousedown touchstart');
+              });
+            }
 
-            $scope.$on('$destroy', function () {
-              $contentsElm.off('mousedown touchstart');
-            });
 
-
-            $scope.toggleMenu = function($event) {
-              $event.stopPropagation();
+            $scope.toggleMenu = function(event) {
+              event.stopPropagation();
     
               // If the menu is already showing...
               if (uiGridCtrl.columnMenuScope.menuShown) {
@@ -186,8 +203,11 @@
     
             // If this column is sortable, add a click event handler
             if ($scope.sortable) {
-              $contentsElm.on('click touchend', function(evt) {
-                evt.stopPropagation();
+              var clickEvent = gridUtil.isTouchEnabled() ? 'touchend' : 'click';
+              $contentsElm.on(clickEvent, function(event) {
+                gridUtil.logDebug('mouse event 2', event.type);
+
+                event.stopPropagation();
     
                 $timeout.cancel(cancelMousedownTimeout);
     
@@ -195,11 +215,13 @@
                 var mousedownTime = mousedownEndTime - mousedownStartTime;
     
                 if (mousedownTime > mousedownTimeout) {
+                  gridUtil.logDebug('long click');
                   // long click, handled above with mousedown
                 }
                 else {
                   // short click
-                  handleClick(evt);
+                  gridUtil.logDebug('short click');
+                  handleClick(event);
                 }
               });
     
@@ -213,14 +235,16 @@
               var filterDeregisters = [];
               angular.forEach($scope.col.filters, function(filter, i) {
                 filterDeregisters.push($scope.$watch('col.filters[' + i + '].term', function(n, o) {
-                  uiGridCtrl.grid.api.core.raise.filterChanged();
-                  uiGridCtrl.grid.refresh()
-                    .then(function () {
-                      if (uiGridCtrl.prevScrollArgs && uiGridCtrl.prevScrollArgs.y && uiGridCtrl.prevScrollArgs.y.percentage) {
-                         uiGridCtrl.fireScrollingEvent({ y: { percentage: uiGridCtrl.prevScrollArgs.y.percentage } });
-                      }
-                      // uiGridCtrl.fireEvent('force-vertical-scroll');
-                    });
+                  if (n !== o) {
+                    uiGridCtrl.grid.api.core.raise.filterChanged();
+                    uiGridCtrl.grid.refresh()
+                      .then(function () {
+                        if (uiGridCtrl.prevScrollArgs && uiGridCtrl.prevScrollArgs.y && uiGridCtrl.prevScrollArgs.y.percentage) {
+                           uiGridCtrl.fireScrollingEvent({ y: { percentage: uiGridCtrl.prevScrollArgs.y.percentage } });
+                        }
+                        // uiGridCtrl.fireEvent('force-vertical-scroll');
+                      });
+                  }
                 }));  
               });
               $scope.$on('$destroy', function() {

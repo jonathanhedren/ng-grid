@@ -59,7 +59,7 @@ module.exports = function(grunt) {
         }
       },
       'bower-install': {
-        command: 'bower install'
+        command: 'node ./node_modules/bower/bin/bower install'
       }
     },
 
@@ -268,7 +268,6 @@ module.exports = function(grunt) {
         debug: true, // debugger statements allowed
         globals: {
           angular: false,
-          console: false,
 
           /* jquery (testing only) */
           $:false,

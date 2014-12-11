@@ -1,4 +1,5 @@
 /* global pdfMake */
+/* global console */
 
 (function () {
   'use strict';
@@ -159,7 +160,11 @@
            * @description GridOptions for selection feature, these are available to be  
            * set using the ui-grid {@link ui.grid.class:GridOptions gridOptions}
            */
-
+          /**
+           * @ngdoc object
+           * @name ui.grid.exporter.api:GridOptions.columnDef
+           * @description ColumnDef settings for exporter
+           */
           /**
            * @ngdoc object
            * @name exporterSuppressMenu
@@ -222,6 +227,15 @@
           gridOptions.exporterSuppressColumns = gridOptions.exporterSuppressColumns ? gridOptions.exporterSuppressColumns : [];
           /**
            * @ngdoc object
+           * @name exporterCsvColumnSeparator
+           * @propertyOf  ui.grid.exporter.api:GridOptions
+           * @description The character to use as column separator
+           * link
+           * <br/>Defaults to ','
+           */
+          gridOptions.exporterCsvColumnSeparator = gridOptions.exporterCsvColumnSeparator ? gridOptions.exporterCsvColumnSeparator : ',';
+          /**
+           * @ngdoc object
            * @name exporterPdfDefaultStyle
            * @propertyOf  ui.grid.exporter.api:GridOptions
            * @description The default style in pdfMake format
@@ -263,25 +277,52 @@
           gridOptions.exporterPdfTableHeaderStyle = gridOptions.exporterPdfTableHeaderStyle ? gridOptions.exporterPdfTableHeaderStyle : { bold: true, fontSize: 12, color: 'black' };
           /**
            * @ngdoc object
-           * @name exporterPdfHeaderStyle
-           * @propertyOf  ui.grid.exporter.api:GridOptions
-           * @description The header style in pdfMake format
-           * <br/>Defaults to:
-           * <pre>
-           *   {
-           *     bold: true,
-           *     fontSize: 14
-           *   }
-           * </pre>
-           */
-          gridOptions.exporterPdfHeaderStyle = gridOptions.exporterPdfHeaderStyle ? gridOptions.exporterPdfHeaderStyle : { bold: true, fontSize: 14 };
-          /**
-           * @ngdoc object
            * @name exporterPdfHeader
            * @propertyOf  ui.grid.exporter.api:GridOptions
-           * @description The header text for pdf exports
+           * @description The header section for pdf exports.  Can be
+           * simple text:
+           * <pre>
+           *   gridOptions.exporterPdfHeader = 'My Header';
+           * </pre>
+           * Can be a more complex object in pdfMake format:
+           * <pre>
+           *   gridOptions.exporterPdfHeader = {
+           *     columns: [
+           *       'Left part',
+           *       { text: 'Right part', alignment: 'right' }
+           *     ]
+           *   };
+           * </pre>
+           * Or can be a function, allowing page numbers and the like
+           * <pre>
+           *   gridOptions.exporterPdfHeader: function(currentPage, pageCount) { return currentPage.toString() + ' of ' + pageCount; };
+           * </pre>
            */
           gridOptions.exporterPdfHeader = gridOptions.exporterPdfHeader ? gridOptions.exporterPdfHeader : null;
+          /**
+           * @ngdoc object
+           * @name exporterPdfFooter
+           * @propertyOf  ui.grid.exporter.api:GridOptions
+           * @description The header section for pdf exports.  Can be
+           * simple text:
+           * <pre>
+           *   gridOptions.exporterPdfFooter = 'My Footer';
+           * </pre>
+           * Can be a more complex object in pdfMake format:
+           * <pre>
+           *   gridOptions.exporterPdfFooter = {
+           *     columns: [
+           *       'Left part',
+           *       { text: 'Right part', alignment: 'right' }
+           *     ]
+           *   };
+           * </pre>
+           * Or can be a function, allowing page numbers and the like
+           * <pre>
+           *   gridOptions.exporterPdfFooter: function(currentPage, pageCount) { return currentPage.toString() + ' of ' + pageCount; };
+           * </pre>
+           */
+          gridOptions.exporterPdfFooter = gridOptions.exporterPdfFooter ? gridOptions.exporterPdfFooter : null;
           /**
            * @ngdoc object
            * @name exporterPdfOrientation
@@ -339,6 +380,27 @@
           
           /**
            * @ngdoc object
+           * @name exporterPdfCustomFormatter
+           * @propertyOf  ui.grid.exporter.api:GridOptions
+           * @description A custom callback routine that changes the pdf document, adding any
+           * custom styling or content that is supported by pdfMake.  Takes in the complete docDefinition, and
+           * must return an updated docDefinition ready for pdfMake.
+           * @example
+           * In this example we add a style to the style array, so that we can use it in our
+           * footer definition.
+           * <pre>
+           *   gridOptions.exporterPdfCustomFormatter = function ( docDefinition ) {
+           *     docDefinition.styles.footerStyle = { bold: true, fontSize: 10 };
+           *     return docDefinition;
+           *   }
+           * 
+           *   gridOptions.exporterPdfFooter = { text: 'My footer', style: 'footerStyle' }
+           * </pre>
+           */
+          gridOptions.exporterPdfCustomFormatter = ( gridOptions.exporterPdfCustomFormatter && typeof( gridOptions.exporterPdfCustomFormatter ) === 'function' ) ? gridOptions.exporterPdfCustomFormatter : function ( docDef ) { return docDef; };
+          
+          /**
+           * @ngdoc object
            * @name exporterHeaderFilter
            * @propertyOf  ui.grid.exporter.api:GridOptions
            * @description A function to apply to the header displayNames before exporting.  Useful for internationalisation,
@@ -364,7 +426,7 @@
            * a specific date format in the exported content.
            * 
            * The method is called once for each field exported, and provides the grid, the
-           * gridCOl and the GridRow for you to use as context in massaging the data.
+           * gridCol and the GridRow for you to use as context in massaging the data.
            * 
            * @param {Grid} grid provides the grid in case you have need of it
            * @param {GridRow} row the row from which the data comes
@@ -482,7 +544,7 @@
         csvExport: function (grid, rowTypes, colTypes, $elm) {
           var exportColumnHeaders = this.getColumnHeaders(grid, colTypes);
           var exportData = this.getData(grid, rowTypes, colTypes);
-          var csvContent = this.formatAsCsv(exportColumnHeaders, exportData);
+          var csvContent = this.formatAsCsv(exportColumnHeaders, exportData, grid.options.exporterCsvColumnSeparator);
           
           if ( !$elm && grid.options.exporterCsvLinkElement ){
             $elm = grid.options.exporterCsvLinkElement;
@@ -532,6 +594,14 @@
         },
         
         
+        /** 
+         * @ngdoc property
+         * @propertyOf ui.grid.exporter.api:GridOptions.columnDef
+         * @name exporterPdfAlign
+         * @description the alignment you'd like for this specific column when
+         * exported into a pdf.  Can be 'left', 'right', 'center' or any other
+         * valid pdfMake alignment option.
+         */
         /**
          * @ngdoc function
          * @name getData
@@ -567,23 +637,25 @@
               break;
           }
           
-          if ( uiGridExporterConstants.ALL ) {
-            angular.forEach(rows, function( row, index ) {
+          angular.forEach(rows, function( row, index ) {
 
-              var extractedRow = [];
-              angular.forEach(grid.columns, function( gridCol, index ) {
-              if ( (gridCol.visible || colTypes === uiGridExporterConstants.ALL ) && 
-                   gridCol.name !== uiGridSelectionConstants.selectionRowHeaderColName &&
-                   grid.options.exporterSuppressColumns.indexOf( gridCol.name ) === -1 ){
-                  extractedRow.push( grid.options.exporterFieldCallback( grid, row, gridCol, grid.getCellValue( row, gridCol ) ) );
+            var extractedRow = [];
+            angular.forEach(grid.columns, function( gridCol, index ) {
+            if ( (gridCol.visible || colTypes === uiGridExporterConstants.ALL ) && 
+                 gridCol.name !== uiGridSelectionConstants.selectionRowHeaderColName &&
+                 grid.options.exporterSuppressColumns.indexOf( gridCol.name ) === -1 ){
+                var extractedField = { value: grid.options.exporterFieldCallback( grid, row, gridCol, grid.getCellValue( row, gridCol ) ) };
+                if ( gridCol.colDef.exporterPdfAlign ) {
+                  extractedField.alignment = gridCol.colDef.exporterPdfAlign;                 
                 }
-              });
-              
-              data.push(extractedRow);
+                extractedRow.push(extractedField);
+              }
             });
             
-            return data;
-          }
+            data.push(extractedRow);
+          });
+          
+          return data;
         },
 
 
@@ -599,14 +671,14 @@
          * an array of column data
          * @returns {string} csv the formatted csv as a string
          */
-        formatAsCsv: function (exportColumnHeaders, exportData) {
+        formatAsCsv: function (exportColumnHeaders, exportData, separator) {
           var self = this;
           
-          var bareHeaders = exportColumnHeaders.map(function(header){return header.displayName;});
+          var bareHeaders = exportColumnHeaders.map(function(header){return { value: header.displayName };});
           
-          var csv = self.formatRowAsCsv(this)(bareHeaders) + '\n';
+          var csv = self.formatRowAsCsv(this, separator)(bareHeaders) + '\n';
           
-          csv += exportData.map(this.formatRowAsCsv(this)).join('\n');
+          csv += exportData.map(this.formatRowAsCsv(this, separator)).join('\n');
           
           return csv;
         },
@@ -621,9 +693,9 @@
          * @param {array} row the row to be turned into a csv string
          * @returns {string} a csv-ified version of the row
          */
-        formatRowAsCsv: function ( exporter ) {
-          return function( row ) {
-            return row.map(exporter.formatFieldAsCsv).join(',');
+        formatRowAsCsv: function (exporter, separator) {
+          return function (row) {
+            return row.map(exporter.formatFieldAsCsv).join(separator);
           };
         },
         
@@ -638,20 +710,20 @@
          * @returns {string} a csv-ified version of the field
          */
         formatFieldAsCsv: function (field) {
-          if (field == null) { // we want to catch anything null-ish, hence just == not ===
+          if (field.value == null) { // we want to catch anything null-ish, hence just == not ===
             return '';
           }
-          if (typeof(field) === 'number') {
-            return field;
+          if (typeof(field.value) === 'number') {
+            return field.value;
           }
-          if (typeof(field) === 'boolean') {
-            return (field ? 'TRUE' : 'FALSE') ;
+          if (typeof(field.value) === 'boolean') {
+            return (field.value ? 'TRUE' : 'FALSE') ;
           }
-          if (typeof(field) === 'string') {
-            return '"' + field.replace(/"/g,'""') + '"';
+          if (typeof(field.value) === 'string') {
+            return '"' + field.value.replace(/"/g,'""') + '"';
           }
 
-          return JSON.stringify(field);        
+          return JSON.stringify(field.value);        
         },
 
         /**
@@ -699,9 +771,8 @@
          * @methodOf  ui.grid.exporter.service:uiGridExporterService
          * @description Exports rows from the grid in pdf format, 
          * the data exported is selected based on the provided options.
-         * Note that this function has a dependency on jsPDF, which must
-         * be either included as a script on your page, or downloaded and
-         * served as part of your site.  The resulting pdf opens in a new
+         * Note that this function has a dependency on pdfMake, which must
+         * be installed.  The resulting pdf opens in a new
          * browser window.
          * @param {Grid} grid the grid from which data should be exported
          * @param {string} rowTypes which rows to export, valid values are
@@ -768,10 +839,16 @@
           }
           
           if ( grid.options.exporterPdfHeader ){
-            docDefinition.content.unshift( { text: grid.options.exporterPdfHeader, style: 'headerStyle' } );
-            docDefinition.styles.headerStyle = grid.options.exporterPdfHeaderStyle;
+            docDefinition.content.unshift( grid.options.exporterPdfHeader );
           }
           
+          if ( grid.options.exporterPdfFooter ){
+            docDefinition.content.push( grid.options.exporterPdfFooter );
+          }
+          
+          if ( grid.options.exporterPdfCustomFormatter ){
+            docDefinition = grid.options.exporterPdfCustomFormatter( docDefinition );
+          }
           return docDefinition;
           
         },
@@ -856,20 +933,24 @@
          * @returns {string} a string-ified version of the field
          */
         formatFieldAsPdfString: function (field) {
-          if (field == null) { // we want to catch anything null-ish, hence just == not ===
-            return '';
+          var returnVal;
+          if (field.value == null) { // we want to catch anything null-ish, hence just == not ===
+            returnVal = '';
+          } else if (typeof(field.value) === 'number') {
+            returnVal = field.value.toString();
+          } else if (typeof(field.value) === 'boolean') {
+            returnVal = (field.value ? 'TRUE' : 'FALSE') ;
+          } else if (typeof(field.value) === 'string') {
+            returnVal = field.value.replace(/"/g,'""');
+          } else {
+            returnVal = JSON.stringify(field.value).replace(/^"/,'').replace(/"$/,'');        
           }
-          if (typeof(field) === 'number') {
-            return field.toString();
+          
+          if (field.alignment && typeof(field.alignment) === 'string' ){
+            returnVal = { text: returnVal, alignment: field.alignment };
           }
-          if (typeof(field) === 'boolean') {
-            return (field ? 'TRUE' : 'FALSE') ;
-          }
-          if (typeof(field) === 'string') {
-            return field.replace(/"/g,'""');
-          }
-
-          return JSON.stringify(field).replace(/^"/,'').replace(/"$/,'');        
+          
+          return returnVal;
         }
       };
 

@@ -12,7 +12,7 @@
           placeholder: 'Buscar...',
           showingItems: 'Artículos Mostrados:',
           selectedItems: 'Artículos Seleccionados:',
-          totalItems: 'Total Artículos:',
+          totalItems: 'Artículos Totales:',
           size: 'Tamaño de Página:',
           first: 'Primera Página',
           next: 'Página Siguiente',
@@ -22,15 +22,25 @@
         menu: {
           text: 'Elegir columnas:'
         },
+        sort: {
+          ascending: 'Orden Ascendente',
+          descending: 'Orden Descendente',
+          remove: 'Sin Ordenar'
+        },
         column: {
           hide: 'Ocultar la columna'
         },
         aggregation: {
-          count: 'total filas: ',
+          count: 'filas totales: ',
           sum: 'total: ',
           avg: 'media: ',
           min: 'min: ',
           max: 'max: '
+        },
+        pinning: {
+          pinLeft: 'Fijar a la Izquierda',
+          pinRight: 'Fijar a la Derecha',
+          unpin: 'Quitar Fijación'
         },
         gridMenu: {
           columns: 'Columnas:',
@@ -43,11 +53,11 @@
           exporterSelectedAsPdf: 'Exportar selección como pdf'
         },
         importer: {
-          noHeaders: 'No fue posible derivar nombres de columnas, ¿tiene encabezados el archivo?',
-          noObjects: 'No fue posible obtener registros, ¿existe información aparte de los encabezados?',
+          noHeaders: 'No fue posible derivar los nombres de las columnas, ¿tiene encabezados el archivo?',
+          noObjects: 'No fue posible obtener registros, ¿contiene datos el archivo, aparte de los encabezados?',
           invalidCsv: 'No fue posible procesar el archivo, ¿es un CSV válido?',
           invalidJson: 'No fue posible procesar el archivo, ¿es un Json válido?',
-          jsonNotArray: 'Archivo json importado debe contener un arreglo, abortando.'
+          jsonNotArray: 'El archivo json importado debe contener un array, abortando.'
         }
       });
       return $delegate;
